@@ -1,0 +1,20 @@
+# Virtual environments
+.venv/
+venv/
+myenv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Local database (may user data)
+db.sqlite3
+
+# User uploads
+media/
+
+# Editor / OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

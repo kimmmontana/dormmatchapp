@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}My Booking Status{% endblock %}
+
+{% block content %}
+<section class="booking-status py-5">
+    <div class="container">
+        <div class="text-center mb-4">
+            <h1 class="display-4 fw-bold">My Booking Status</h1>
+            <p class="lead text-muted">Track your booking history and current status here.</p>
+        </div>
+
+        {% if booking_status %}
+        <div class="booking-list">
+            {% for booking in booking_status %}
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">Booking ID: {{ booking.book_id }}</h5>
+                    <p><strong>Status:</strong> <span class="badge bg-{{ booking.book_status|lower }}">{{ booking.book_status }}</span></p>
+                    <p><strong>Date:</strong> {{ booking.booking_date }}</p>
+                    <p><strong>Time:</strong> {{ booking.booking_time }}</p>
+                    <p><strong>Dorm:</strong> {{ booking.dorm_id.dorm_name }}</p>
+                    <p><strong>Room Type:</strong> {{ booking.dorm_id.room_type }}</p>
+                    <p><strong>Amount:</strong> PHP {{ booking.amount }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="alert alert-info text-center" role="alert">
+            No bookings found.
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block styles %}
+<style>
+    /* Section Styling */
+    .booking-status {
+        background-color: #f9f9f9;
+        padding: 4rem 0;
+    }
+
+    /* Card Styling */
+    .card {
+        border-radius: 0.75rem;
+    }
+
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: bold;
+    }
+
+    /* Badge Styling */
+    .badge {
+        text-transform: capitalize;
+    }
+
+    .badge.bg-pending {
+        background-color: #f0ad4e;
+    }
+
+    .badge.bg-confirmed {
+        background-color: #5bc0de;
+    }
+
+    .badge.bg-cancelled {
+        background-color: #d9534f;
+    }
+
+    /* Alert Styling */
+    .alert {
+        font-size: 1.1rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+{% load static %}
+{% block content %}
+
+<!-- Hero Section --> 
+ <br/>
+<section class="hero-section py-5 text-center" style="background-color: #152238; padding: 80px 0;">
+    <div class="container">
+        <h1 class="display-4 text-light fw-bold mb-4">Welcome to DormMatch</h1>
+        <p class="lead text-light mb-5">Your one-stop platform for shared and solo dormitory needs. Find your perfect living space with ease and convenience.</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{% url 'waitlist' %}" class="btn btn-light px-4 py-2">Join Waitlist Dorms</a>
+            <a href="{% url 'solodorm' %}" class="btn btn-outline-light px-4 py-2">Solo Dormitories</a>
+        </div>
+    </div>
+</section> 
+
+<!-- Features Section -->
+<section class="features-section py-5">
+    <div class="container text-center">
+        <h1 class="text-dark mb-5">Why Choose DormMatch?</h1>
+        <div class="row justify-content-center">
+            <!-- Waitlisting Section -->
+            <div class="col-lg-4 mb-4">
+                <div class="card border-0 shadow-sm rounded-3 p-4">
+                    <h4 class="text-dark fw-bold">Waitlisting for Shared Dormitories</h4>
+                    <p class="text-muted">Easily join a waitlist for shared dormitories and be matched with roommates who share your preferences and lifestyle.</p>
+                </div>
+            </div>
+            <!-- Solo Dorm Section -->
+            <div class="col-lg-4 mb-4">
+                <div class="card border-0 shadow-sm rounded-3 p-4">
+                    <h4 class="text-dark fw-bold">Solo Dormitories</h4>
+                    <p class="text-muted">Prefer peace and privacy? Our solo dormitories are tailored for independent living with no hassle of waitlisting.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About Us Section -->
+<section class="about-us-section py-5" style="background-color: #152238;">
+    <div class="container text-center">
+        <h2 class="text-light mb-5">What Makes DormMatch Unique?</h2>
+        <p class="text-light mb-5">At DormMatch, we understand the challenges of finding the right living space during your academic journey. Whether you're looking for a social environment or a quiet, solo setup, we simplify the process with a seamless platform designed for students.</p>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card border-0 shadow-sm rounded-3 p-4">
+                    <h5 class="text-dark fw-bold">Flexible Options</h5>
+                    <p class="text-muted">Choose from shared dormitories or solo living spaces that suit your lifestyle and budget.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card border-0 shadow-sm rounded-3 p-4">
+                    <h5 class="text-dark fw-bold">Real-Time Availability</h5>
+                    <p class="text-muted">Stay updated with live availability and never miss out on your ideal dormitory.</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card border-0 shadow-sm rounded-3 p-4">
+                    <h5 class="text-dark fw-bold">Trusted by Students</h5>
+                    <p class="text-muted">Thousands of students trust DormMatch to find their perfect home away from home.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% if not user.is_authenticated %}
+<!-- Call to Action -->
+<section class="cta-section py-5 text-center">
+    <div class="container">
+        <h3 class="text-dark mb-4">Start Your Journey with DormMatch Today</h3>
+        <p class="text-muted mb-5">Sign up now and experience the smarter way to find your perfect dormitory.</p>
+        
+            <a href="{% url 'signup' %}" class="btn btn-dark px-4 py-2" style="background-color: #152238; color: white;">Sign Up Now</a>
+
+    </div>
+</section>
+
+{% else %}
+{% endif %}
+{% endblock %}

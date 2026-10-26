@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Solo Dorm Details{% endblock %}
+{% load static %}
+
+{% block content %}
+<!-- Dorm Details Section (White Background) -->
+<section class="solo-dorm-details my-5" style="background-color: #ffffff; padding: 5px 0;">
+    <div class="container text-dark">
+        <!-- Page Header -->
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold text-dark">{{ dorm.dorm_name }}</h1>
+            <p class="fs-5 mb-4">{{ dorm.description|default:"No description available." }}</p> 
+        </div>
+
+        <!-- Dorm Details Content -->
+        <div class="row align-items-center mb-5">
+            <!-- Dorm Image -->
+            <div class="col-lg-6 text-center mb-4">
+                {% if dorm.image %}
+                <img src="{{ dorm.image.url }}" class="rounded shadow-sm" alt="Image of {{ dorm.dorm_name }}" style="width: 100%; max-height: 500px; object-fit: cover;">
+                {% else %}
+                <img src="{% static 'images/logo.png' %}" class="rounded shadow-sm" alt="Default dorm image" style="width: 100%; max-height: 500px; object-fit: cover;">
+                {% endif %}
+            </div>
+
+            <!-- Dorm Information -->
+            <div class="col-lg-6">
+                <div class="bg-light text-dark rounded-3 shadow-lg p-4">
+                    <h2 class="fw-bold text-left mb-3">Description</h2>
+                    <ul class="list-unstyled fs-5 mb-4">
+                        <li><strong>Location:</strong> {{ dorm.dorm_loc }}</li>
+                        <li><strong>Room Type:</strong> {{ dorm.get_room_type_display }}</li>
+                        <li><strong>Price:</strong> PHP {{ dorm.price }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Booking Section (Darker Background) -->
+<section class="booking-section py-5" style="background-color: #1f2d3d; padding: 60px 0;">
+    <div class="container text-light">
+        <div class="text-center mb-4">
+            <h2 class="display-5 fw-bold mb-4">Book This Dorm</h2>
+            <p class="fs-5 mb-4">Scan the QR code and fill out the reference of your payment below to secure your booking.</p>
+        </div>
+
+        <!-- QR Code -->
+        <div class="text-center mb-5">
+            <img src="{% static 'images/qr_dormmatch.png' %}" class="rounded shadow-sm" alt="QR Code" style="max-width: 220px;">
+        </div>
+
+        <!-- Booking Form -->
+        <div class="d-flex justify-content-center">
+            <form method="post" class="bg-light p-4 rounded-3 shadow-lg text-center text-dark" style="max-width: 600px; width: 100%;">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-dark px-4 py-2" style="background-color: #152238;">Submit Booking</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Solo Dorm{% endblock %}
+{% load static %}
+
+{% block content %}
+<section class="solodorm">
+    <h1>Solo Dorm</h1>
+    <p>Explore our premium solo dormitories tailored for your comfort and privacy.</p>
+    <div class="dorm-types">
+        <div class="dorm-row">
+            <!-- Dorm 1 -->
+            <div class="dorm-box">
+                <img src="{% static 'images/class-b-solo-1.jpg' %}" alt="Class B Solo Dorm">
+                <div class="card-content">
+                    <h2>Class B Solo Dorm</h2>
+                    <p><strong>Price:</strong> ₱12,000.00</p>
+                    <p><strong>Status:</strong> Available</p>
+                    <button class="details-btn">View Details</button>
+                </div>
+            </div>
+            <!-- Dorm 2 -->
+            <div class="dorm-box">
+                <img src="{% static 'images/class-a-solo-1.jpg' %}" alt="Class A Solo Dorm">
+                <div class="card-content">
+                    <h2>Class A Solo Dorm</h2>
+                    <p><strong>Price:</strong> ₱16,000.00</p>
+                    <p><strong>Status:</strong> Available</p>
+                    <button class="details-btn">View Details</button>
+                </div>
+            </div>
+        </div>
+        <!-- Additional rows for more dorms -->
+        <div class="dorm-row">
+            <div class="dorm-box">
+                <img src="{% static 'images/class-a-solo-3.jpg' %}" alt="Class A Solo Dorm">
+                <div class="card-content">
+                    <h2>Class A Solo Dorm</h2>
+                    <p><strong>Price:</strong> ₱16,000.00</p>
+                    <p><strong>Status:</strong> Available</p>
+                    <button class="details-btn">View Details</button>
+                </div>
+            </div>
+            <div class="dorm-box">
+                <img src="{% static 'images/class-b-solo-3.jpg' %}" alt="Class B Solo Dorm">
+                <div class="card-content">
+                    <h2>Class B Solo Dorm</h2>
+                    <p><strong>Price:</strong> ₱12,000.00</p>
+                    <p><strong>Status:</strong> Available</p>
+                    <button class="details-btn">View Details</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

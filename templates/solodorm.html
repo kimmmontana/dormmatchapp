@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Solo Dormitory{% endblock %}
+{% load static %}
+
+{% block content %}
+<section class="solodorm my-5" style="background-color: #152238; padding: 100px 0;">
+    <div class="container">
+        <!-- Page Header -->
+        <div class="text-center mb-5">
+            <h1 class="display-4 fw-bold text-light">Solo Dormitories</h1>
+            <p class="text-light fs-5 mb-4">Explore premium solo dormitories crafted for your privacy, comfort, and convenience.</p>
+            <div class="d-flex justify-content-center gap-3">
+                <!-- <a href="{% url 'home' %}" class="btn btn-outline-light px-4 py-2">Back to Home</a> -->
+            </div>
+        </div>
+
+        <!-- Dormitory List -->
+        <div class="row g-4">
+            {% for dorm in object_list %}
+            <div class="col-lg-3 col-sm-1">
+                <div class="card h-100 shadow-sm border-0 rounded-3">
+                    <!-- Price Badge -->
+                    <div class="price-badge position-absolute" style="top: 10px; right: 15px; background-color: #152238; color: #fff; padding: 3px 7px; border-radius: 0.3rem; font-weight: bold;">
+                        ₱ {{ dorm.price }}
+                    </div>
+
+                    <!-- Dorm Image -->
+                    {% if dorm.image %}
+                    <img src="{{ dorm.image.url }}" class="card-img-top rounded-top" alt="Image of {{ dorm.dorm_name }} " style="height: 200px; object-fit: cover; width: 100%;"> 
+                    {% else %}
+                    <img src="{% static 'images/logo.png' %}" class="card-img-top rounded-top" alt="Default image">
+                    {% endif %}
+
+                    <!-- Dorm Details -->
+                    <div class="card-body bg-light">
+                        <h4 class="card-title fw-bold text-dark">{{ dorm.dorm_name }}</h4>
+                        <ul class="list-unstyled text-dark">
+                            <li><strong>Location:</strong> {{ dorm.dorm_loc }}</li>
+                            <li><strong>Room Type:</strong> {{ dorm.get_room_type_display }}</li>
+                            <li><strong>Capacity:</strong> {{ dorm.resident_capacity }}</li>
+                            <li><strong>Occupied Status:</strong> {{ dorm.occupied_status }}</li>
+                            <li><strong>Price:</strong> PHP {{ dorm.price }}</li>
+                        </ul>
+                        
+                    </div>
+
+                    <!-- Card Footer -->
+                    <div class="card-footer text-center bg-light border-0">
+                        <a href="{% url 'solo_detail' dorm.pk %}" class="btn btn-dark btn-sm" style="background-color: #152238;">View Details</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <!-- No Data Available -->
+            <div class="col-12">
+                <p class="text-center text-light fs-5">No solo dormitories available at the moment. Please check back later!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
