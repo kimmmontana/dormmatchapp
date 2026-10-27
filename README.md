@@ -26,11 +26,25 @@ Finding student housing and compatible roommates is often slow and uncertain. **
 - Students pay by QR code and submit a payment reference. **Administrators** verify it and manage availability from a dashboard.
 - An optional **Stellar Soroban smart contract** holds payments in escrow, so students are refunded automatically if a booking is declined.
 
+## Screenshots
+
+| Home | Solo dorms |
+| :---: | :---: |
+| ![Home page](docs/screenshots/home.png) | ![Solo dorm listings](docs/screenshots/solo-dorms.png) |
+| **Shared dorms (waitlist)** | **My bookings** |
+| ![Shared dorm listings](docs/screenshots/shared-dorms.png) | ![Booking status page](docs/screenshots/booking-status.png) |
+
+<p align="center">
+  <img src="docs/screenshots/stellar-payment.png" alt="Booking with QR payment or Stellar wallet" width="640"><br>
+  <em>Book with a QR payment reference, or pay instantly from a Freighter wallet on Stellar.</em>
+</p>
+
 ---
 
 ## Table of Contents
 
 - [Overview](#overview)
+- [Screenshots](#screenshots)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
