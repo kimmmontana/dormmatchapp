@@ -208,6 +208,26 @@ The `blockchain/` folder contains **`DormMatchBooking`**, a Soroban smart contra
 
 The contract also emits events (`DormListed`, `BookingRequested`, `BookingStatusChanged`, `DormStatusChanged`) so off-chain services such as the Django backend can stay in sync.
 
+### 🚀 Live Deployment (Stellar Testnet)
+
+| Item              | Value |
+| ----------------- | ----- |
+| **Contract ID**   | [`CB3PBY7GGWEZFD35YSKUT65NSDYE3AVM7C5OCFXELOY6NJKHDUGMR2FQ`](https://stellar.expert/explorer/testnet/contract/CB3PBY7GGWEZFD35YSKUT65NSDYE3AVM7C5OCFXELOY6NJKHDUGMR2FQ) |
+| Network           | Stellar Testnet (`Test SDF Network ; September 2015`) |
+| Payment token     | Native XLM (`CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC`) |
+| Admin / Treasury  | `GC33NJWRCPOL47LS3TGVY3OAI3E3WDWFVMP3PRMTLSMCQ3GC6HTRZVI7` |
+| Deploy transaction| [`a949f50f…1705b`](https://stellar.expert/explorer/testnet/tx/a949f50fc4361342edb8af6cfb061b8b7fe0fdc981cbb75ee18a7fe26891705b) |
+| Explore & invoke  | [Stellar Lab](https://lab.stellar.org/r/testnet/contract/CB3PBY7GGWEZFD35YSKUT65NSDYE3AVM7C5OCFXELOY6NJKHDUGMR2FQ) |
+
+Two sample dorms are listed on-chain: **#1 Class A Solo** (Manila) and **#2 Class B Shared** (Quezon City, capacity 2), each priced at 0.5 XLM. Full deployment details are in [`blockchain/deployments/testnet.json`](blockchain/deployments/testnet.json).
+
+Read a dorm from the live contract:
+
+```bash
+stellar contract invoke --id CB3PBY7GGWEZFD35YSKUT65NSDYE3AVM7C5OCFXELOY6NJKHDUGMR2FQ \
+  --network testnet --source <YOUR_IDENTITY> --send=no -- get_dorm --dorm_id 2
+```
+
 ### Build and test
 
 ```bash

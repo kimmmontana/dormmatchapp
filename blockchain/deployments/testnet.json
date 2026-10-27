@@ -1,0 +1,19 @@
+{
+  "network": "testnet",
+  "networkPassphrase": "Test SDF Network ; September 2015",
+  "rpcUrl": "https://soroban-testnet.stellar.org",
+  "contract": "DormMatchBooking",
+  "contractId": "CB3PBY7GGWEZFD35YSKUT65NSDYE3AVM7C5OCFXELOY6NJKHDUGMR2FQ",
+  "admin": "GC33NJWRCPOL47LS3TGVY3OAI3E3WDWFVMP3PRMTLSMCQ3GC6HTRZVI7",
+  "treasury": "GC33NJWRCPOL47LS3TGVY3OAI3E3WDWFVMP3PRMTLSMCQ3GC6HTRZVI7",
+  "paymentToken": {
+    "asset": "native (XLM)",
+    "contractId": "CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"
+  },
+  "deployTx": "a949f50fc4361342edb8af6cfb061b8b7fe0fdc981cbb75ee18a7fe26891705b",
+  "deployedAt": "2026-10-27",
+  "seededDorms": [
+    { "dormId": 1, "name": "Class A Solo", "location": "Manila", "roomType": "Solo", "capacity": 1, "priceStroops": 5000000 },
+    { "dormId": 2, "name": "Class B Shared", "location": "Quezon City", "roomType": "Shared", "capacity": 2, "priceStroops": 5000000 }
+  ]
+}
