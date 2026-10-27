@@ -7,8 +7,10 @@
 A student housing platform for booking solo dorms and filling shared rooms through a waitlist,<br>
 with optional on-chain payment escrow on the **Stellar** network.
 
+[![CI](https://github.com/kimmmontana/dormmatchapp/actions/workflows/ci.yml/badge.svg)](https://github.com/kimmmontana/dormmatchapp/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
-![Django](https://img.shields.io/badge/Django-4.0-092E20?logo=django&logoColor=white)
+![Django](https://img.shields.io/badge/Django-5.2%20LTS-092E20?logo=django&logoColor=white)
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-5-7952B3?logo=bootstrap&logoColor=white)
 ![Rust](https://img.shields.io/badge/Rust-Soroban-000000?logo=rust&logoColor=white)
 ![Stellar](https://img.shields.io/badge/Stellar-Smart%20Contract-7D00FF?logo=stellar&logoColor=white)
@@ -23,8 +25,8 @@ Finding student housing and compatible roommates is often slow and uncertain. **
 
 - Students browse **solo rooms** and book them directly, or join the **waitlist for a shared room**.
 - When a shared room's waitlist reaches capacity, every resident on it is **approved automatically**.
-- Students pay by QR code and submit a payment reference. **Administrators** verify it and manage availability from a dashboard.
-- An optional **Stellar Soroban smart contract** holds payments in escrow, so students are refunded automatically if a booking is declined.
+- Students pay by QR code and submit a payment reference, or pay **straight from a Stellar wallet**. **Administrators** verify bookings and manage availability from a dashboard.
+- Wallet payments go into a **Stellar Soroban smart contract** that holds them in escrow, so students are refunded automatically if a booking is declined.
 
 ## Screenshots
 
@@ -52,8 +54,10 @@ Finding student housing and compatible roommates is often slow and uncertain. **
 - [Booking Workflow](#booking-workflow)
 - [Smart Contract (Stellar / Soroban)](#smart-contract-stellar--soroban)
 - [Data Model](#data-model)
+- [Deployment](#deployment)
 - [Running Tests](#running-tests)
 - [Contributing](#contributing)
+- [License](#license)
 - [Author](#author)
 
 ---
@@ -66,37 +70,47 @@ Finding student housing and compatible roommates is often slow and uncertain. **
 - **Payment verification.** Students submit a payment reference (via QR code payment) and the admin verifies it.
 - **Booking status tracking.** Students see each booking's state: *Verify → Waitlisted → Approved / Declined*.
 - **Admin dashboard.** Built on the Django admin, with validation rules that enforce room capacity and room-type constraints.
-- **On-chain escrow (optional).** A Soroban contract that holds payments in a Stellar asset until a booking is approved or refunded.
+- **Stellar wallet payments.** Students pay in XLM from their [Freighter](https://www.freighter.app/) wallet. The payment is held in escrow by a Soroban smart contract until the booking is approved or refunded.
+- **On-chain admin actions.** Admins list dorms on-chain and approve, waitlist, or decline (refund) bookings through the contract, right from the Django admin.
+- **Demo data.** One command loads sample dorms, students, and bookings.
 
 ## Tech Stack
 
 | Layer          | Technology                                   |
 | -------------- | -------------------------------------------- |
-| Backend        | Python 3, Django 4.0                         |
+| Backend        | Python 3, Django 5.2 LTS                     |
 | Frontend       | Django Templates, Bootstrap 5, custom CSS    |
-| Database       | SQLite (development)                         |
+| Database       | SQLite (development), PostgreSQL (production)|
 | Media          | Pillow (dorm images)                         |
-| Configuration  | python-dotenv                                |
+| Blockchain     | Python `stellar-sdk`, Freighter wallet API   |
 | Smart contract | Rust, `soroban-sdk`, Stellar CLI             |
+| Deployment     | gunicorn, WhiteNoise, Render                 |
+| CI             | GitHub Actions                               |
 
 ## Project Structure
 
 ```
 dormmatchapp/
+├── .github/workflows/   # CI: Django tests and contract tests
 ├── accounts/            # Custom user model, sign-up and login
 ├── dormmatch/           # Dorms, bookings, views, and business rules
+│   ├── stellar.py       # Smart contract integration (stellar-sdk)
+│   └── management/commands/seed_demo.py
 ├── django_project/      # Django settings, URLs, WSGI/ASGI
 ├── templates/           # HTML templates (home, listings, details, status)
-├── static/              # CSS, images, Bootstrap vendor files
+├── static/              # CSS, JS, images, Bootstrap vendor files
 ├── blockchain/          # Stellar Soroban smart contract workspace
-│   └── contracts/
-│       └── dorm-booking/
-│           └── src/
-│               ├── lib.rs    # DormMatchBooking contract
-│               └── test.rs   # Contract unit tests
+│   ├── contracts/dorm-booking/src/
+│   │   ├── lib.rs       # DormMatchBooking contract
+│   │   └── test.rs      # Contract unit tests
+│   └── deployments/testnet.json
+├── docs/screenshots/
+├── build.sh             # Render build script
+├── render.yaml          # Render Blueprint
 ├── manage.py
 ├── requirements.txt
-└── .env.example
+├── .env.example
+└── LICENSE
 ```
 
 ## Getting Started
@@ -147,7 +161,12 @@ python -c "from django.core.management.utils import get_random_secret_key; print
 ```bash
 python manage.py migrate
 python manage.py createsuperuser
+
+# Optional: load sample dorms, students, and bookings
+python manage.py seed_demo
 ```
+
+The demo students are `maria` and `paolo`, with the password `demo-pass-123`.
 
 ### 6. Run the development server
 
@@ -169,6 +188,8 @@ Open http://127.0.0.1:8000 for the site and http://127.0.0.1:8000/admin for the 
 | `/booking-status/`     | The logged-in student's bookings         |
 | `/aboutus/`            | About DormMatch                          |
 | `/accounts/signup/`    | Student registration                     |
+| `/stellar/book/<id>/prepare/` | Builds the wallet transaction (JSON) |
+| `/stellar/book/<id>/submit/`  | Submits the signed transaction (JSON)|
 
 ## Booking Workflow
 
@@ -221,6 +242,39 @@ The `blockchain/` folder contains **`DormMatchBooking`**, a Soroban smart contra
 | `get_dorm`, `get_booking`, `get_dorm_bookings`, `get_student_bookings`, `has_open_booking` | anyone | Read-only views |
 
 The contract also emits events (`DormListed`, `BookingRequested`, `BookingStatusChanged`, `DormStatusChanged`) so off-chain services such as the Django backend can stay in sync.
+
+### Paying with a Stellar wallet
+
+The Django app is connected to the contract through `dormmatch/stellar.py`, which uses the Python [`stellar-sdk`](https://github.com/StellarCN/py-stellar-base).
+
+```
+ Browser (Freighter)           Django server                 Stellar network
+ ───────────────────           ─────────────                 ───────────────
+ Connect wallet ─────────────▶ build `book` tx (simulated) ─▶ RPC
+ Sign tx in Freighter ◀─────── unsigned XDR
+ Signed XDR ─────────────────▶ check it's the exact call ──▶ submit, wait for success
+                               read booking on-chain ◀──────
+ Redirect to success ◀──────── save BookingStatus (tx hash)
+```
+
+The server only submits the exact `book` call it prepared, for the same contract, student, and dorm. Any other signed transaction is rejected.
+
+**To enable it**, set these in `.env`:
+
+```bash
+STELLAR_CONTRACT_ID=CB3PBY7GGWEZFD35YSKUT65NSDYE3AVM7C5OCFXELOY6NJKHDUGMR2FQ
+STELLAR_ADMIN_SECRET=S...   # contract admin key, for the admin actions
+```
+
+Then give a dorm a **price in XLM** and an **on-chain dorm ID** in the Django admin, or select it and run **List selected dorms on Stellar**. Its booking page will show a **Connect Freighter & Pay** button. Students need the [Freighter](https://www.freighter.app/) extension set to *Testnet* and a funded account (use the Friendbot in Freighter).
+
+**Admin actions** on bookings paid with Stellar:
+
+| Action                              | Contract call  | Effect                                                 |
+| ----------------------------------- | -------------- | ------------------------------------------------------ |
+| Approve on Stellar (solo rooms)     | `approve_solo` | Releases the payment to the treasury                   |
+| Waitlist on Stellar (shared rooms)  | `waitlist`     | Approves and pays out everyone once the room is full   |
+| Decline and refund on Stellar       | `decline`      | Refunds the student's XLM                              |
 
 ### 🚀 Live Deployment (Stellar Testnet)
 
@@ -285,9 +339,31 @@ stellar contract invoke --id <CONTRACT_ID> --source admin --network testnet -- \
 
 **`CustomUser`** (`accounts`): username, name and suffix, birthday (with a computed age), gender, contact number, email, school, degree program.
 
-**`DormAccommodation`** (`dormmatch`): name, location, room type (Solo/Shared), resident capacity, occupied status (No/Yes/Waiting), price, description, waitlist count, image.
+**`DormAccommodation`** (`dormmatch`): name, location, room type (Solo/Shared), resident capacity, occupied status (No/Yes/Waiting), price, description, waitlist count, image, price in XLM, on-chain dorm ID.
 
-**`BookingStatus`** (`dormmatch`): student, dorm, booking date and time, amount, status (Verify/Waitlisted/Approved/Declined), payment reference.
+**`BookingStatus`** (`dormmatch`): student, dorm, booking date and time, amount, status (Verify/Waitlisted/Approved/Declined), payment reference, and, for wallet payments, the on-chain booking ID, wallet address, and transaction hash.
+
+## Deployment
+
+The repository includes a [Render Blueprint](https://render.com/docs/blueprint-spec) (`render.yaml`) that creates the web service and a PostgreSQL database.
+
+1. On [Render](https://render.com), choose **New → Blueprint** and connect this repository.
+2. Set `STELLAR_ADMIN_SECRET` when prompted, or leave it empty to disable the admin actions.
+3. Deploy. `build.sh` installs dependencies, collects static files, and runs migrations.
+4. Create an admin account from the service's **Shell** tab: `python manage.py createsuperuser`.
+
+Production settings come from environment variables:
+
+| Variable               | Purpose                                              |
+| ---------------------- | ---------------------------------------------------- |
+| `DJANGO_SECRET_KEY`    | Secret key (generated by Render)                     |
+| `DJANGO_DEBUG`         | `False` in production                                |
+| `DJANGO_ALLOWED_HOSTS` | Extra hostnames (Render's own is added automatically)|
+| `DATABASE_URL`         | PostgreSQL connection string                         |
+| `STELLAR_CONTRACT_ID`  | Enables Stellar wallet payments                      |
+| `STELLAR_ADMIN_SECRET` | Contract admin key for the admin actions             |
+
+> **Note:** Render's free web services have no persistent disk, so uploaded dorm images are lost on redeploy. Use a persistent disk or object storage for production media.
 
 ## Running Tests
 
@@ -299,6 +375,8 @@ python manage.py test
 cd blockchain && cargo test
 ```
 
+Both suites run automatically on every push and pull request through [GitHub Actions](.github/workflows/ci.yml). The Stellar integration tests use mocks, so they need no network access.
+
 ## Contributing
 
 1. Fork the repository and create a feature branch: `git checkout -b feature/my-change`
@@ -306,6 +384,10 @@ cd blockchain && cargo test
 3. Commit with a clear message and open a pull request against `main`.
 
 Never commit `.env` files or secret keys. Use `.env.example` as the template.
+
+## License
+
+Released under the [MIT License](LICENSE).
 
 ## Author
 
