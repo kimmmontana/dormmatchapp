@@ -34,7 +34,7 @@
                                 <span class="fw-bold">{{ user.username }}</span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end shadow">
-                                <li><a class="dropdown-item" href="{% url 'booking-status' %}">My Bookings1</a></li>
+                                <li><a class="dropdown-item" href="{% url 'booking-status' %}">My Bookings</a></li>
                                 <li>
                                     <form method="post" action="{% url 'logout' %}">
                                         {% csrf_token %}

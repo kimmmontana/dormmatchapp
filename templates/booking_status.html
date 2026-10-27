@@ -16,7 +16,7 @@
             <div class="card shadow-sm mb-4 border-0">
                 <div class="card-body">
                     <h5 class="card-title text-primary">Booking ID: {{ booking.book_id }}</h5>
-                    <p><strong>Status:</strong> <span class="badge bg-{{ booking.book_status|lower }}">{{ booking.book_status }}</span></p>
+                    <p><strong>Status:</strong> <span class="badge {% if booking.book_status == 'Approved' %}bg-success{% elif booking.book_status == 'Declined' %}bg-danger{% elif booking.book_status == 'Waitlisted' %}bg-info text-dark{% else %}bg-warning text-dark{% endif %}">{{ booking.book_status }}</span></p>
                     <p><strong>Date:</strong> {{ booking.booking_date }}</p>
                     <p><strong>Time:</strong> {{ booking.booking_time }}</p>
                     <p><strong>Dorm:</strong> {{ booking.dorm_id.dorm_name }}</p>

@@ -308,3 +308,17 @@ class SeedDemoCommandTests(TestCase):
         self.assertEqual(DormAccommodation.objects.count(), 4)
         self.assertEqual(BookingStatus.objects.filter(book_status="Waitlisted").count(), 2)
         self.assertEqual(DormAccommodation.objects.get(dorm_name="Class A Shared").occupied_status, "Waiting")
+
+
+class BookingStatusBadgeTests(TestCase):
+    def test_each_status_gets_a_visible_badge(self):
+        dorm = make_dorm("Shared", 5)
+        user = make_user("alice")
+        expected = {"Verify": "bg-warning", "Waitlisted": "bg-info", "Declined": "bg-danger"}
+        for status in expected:
+            make_booking(user, dorm, status)
+
+        self.client.force_login(user)
+        response = self.client.get(reverse("booking-status"))
+        for status, css in expected.items():
+            self.assertContains(response, f'{css}{" text-dark" if css != "bg-danger" else ""}">{status}</span>')
