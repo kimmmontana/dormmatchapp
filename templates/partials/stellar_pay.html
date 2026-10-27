@@ -1,0 +1,19 @@
+{% load static %}
+{% if stellar_enabled and dorm.chain_dorm_id and dorm.price_xlm %}
+<!-- Stellar wallet payment -->
+<div class="d-flex justify-content-center mt-4">
+    <div id="stellar-pay" class="p-4 rounded-3 text-center" style="max-width: 600px; width: 100%; border: 1px solid rgba(255,255,255,0.25);"
+         data-prepare-url="{% url 'stellar_prepare_booking' dorm.pk %}"
+         data-submit-url="{% url 'stellar_submit_booking' dorm.pk %}"
+         data-network-passphrase="{{ stellar_network_passphrase }}"
+         data-csrf="{{ csrf_token }}">
+        <p class="text-uppercase small mb-2" style="letter-spacing: 0.1em; opacity: 0.75;">or pay instantly on-chain</p>
+        <h3 class="h4 fw-bold mb-2">Pay {{ dorm.price_xlm|floatformat:"-7" }} XLM with Stellar</h3>
+        <p class="mb-3" style="opacity: 0.85;">Your payment is held in the DormMatch smart contract and refunded automatically if the booking is declined.</p>
+        <button type="button" class="btn btn-light px-4 py-2 fw-semibold" data-stellar-pay>Connect Freighter &amp; Pay</button>
+        <div data-stellar-status class="small mt-3" role="status" aria-live="polite"></div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@stellar/freighter-api@6.0.1/build/index.min.js"></script>
+<script src="{% static 'js/stellar-booking.js' %}"></script>
+{% endif %}

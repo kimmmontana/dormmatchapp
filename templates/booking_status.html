@@ -22,6 +22,9 @@
                     <p><strong>Dorm:</strong> {{ booking.dorm_id.dorm_name }}</p>
                     <p><strong>Room Type:</strong> {{ booking.dorm_id.room_type }}</p>
                     <p><strong>Amount:</strong> PHP {{ booking.amount }}</p>
+                    {% if booking.tx_hash %}
+                    <p><strong>Paid on Stellar:</strong> <a href="{{ stellar_explorer_url }}/tx/{{ booking.tx_hash }}" target="_blank" rel="noopener">View transaction</a></p>
+                    {% endif %}
                 </div>
             </div>
             {% endfor %}

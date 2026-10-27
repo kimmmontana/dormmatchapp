@@ -29,6 +29,9 @@ class DormAccommodation(models.Model):
     description = models.TextField(blank=True, null=True)
     num_waitlist = models.CharField(max_length=6, editable= False, default="0")
     image = models.ImageField(upload_to='dorm_images/', blank=True, null=True)
+    # Stellar escrow: the dorm's ID in the DormMatchBooking contract and its price in XLM.
+    chain_dorm_id = models.PositiveIntegerField(unique=True, blank=True, null=True)
+    price_xlm = models.DecimalField(max_digits=14, decimal_places=7, blank=True, null=True)
 
     def __str__(self):
         # Define the string representation for the admin panel
@@ -87,6 +90,10 @@ class BookingStatus(models.Model):
     amount = models.DecimalField(max_digits=8, decimal_places=2)  # Amount based on the price in DormAccommodation
     book_status = models.CharField(max_length=10, choices=BOOKING_STATUS_CHOICES, default='Verify')
     reference_payment =  models.CharField(max_length=6)
+    # Set when the booking was paid through the Stellar contract.
+    chain_booking_id = models.PositiveBigIntegerField(unique=True, blank=True, null=True)
+    wallet_address = models.CharField(max_length=56, blank=True)
+    tx_hash = models.CharField(max_length=64, blank=True)
 
     def __str__(self):
         # Define the string representation for the admin panel

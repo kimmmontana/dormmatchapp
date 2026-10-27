@@ -77,6 +77,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'dormmatch.context_processors.stellar_settings',
             ],
         },
     },
@@ -150,3 +151,13 @@ TIME_ZONE = 'Asia/Manila'
 USE_TZ = True  # Enable timezone-aware datetimes
 
 LOGOUT_REDIRECT_URL = '/'
+
+
+# Stellar / Soroban booking escrow (see blockchain/ and dormmatch/stellar.py).
+# Leave STELLAR_CONTRACT_ID empty to disable wallet payments.
+STELLAR_CONTRACT_ID = os.environ.get("STELLAR_CONTRACT_ID", "")
+STELLAR_RPC_URL = os.environ.get("STELLAR_RPC_URL", "https://soroban-testnet.stellar.org")
+STELLAR_NETWORK_PASSPHRASE = os.environ.get("STELLAR_NETWORK_PASSPHRASE", "Test SDF Network ; September 2015")
+STELLAR_EXPLORER_URL = os.environ.get("STELLAR_EXPLORER_URL", "https://stellar.expert/explorer/testnet")
+# Secret key of the contract admin; only needed for the Django admin actions.
+STELLAR_ADMIN_SECRET = os.environ.get("STELLAR_ADMIN_SECRET", "")

@@ -5,6 +5,12 @@ from .models import DormAccommodation, BookingStatus
 from .forms import BookingStatusForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_POST
+from . import stellar
+import json
 import logging
 
 logger = logging.getLogger(__name__)
@@ -112,3 +118,67 @@ class AboutusPageView(TemplateView):
 
 class SuccessPageView(TemplateView):
     template_name = 'success.html'
+
+
+def _bookable_on_chain(dorm):
+    return stellar.is_enabled() and dorm.chain_dorm_id is not None and dorm.occupied_status != 'Yes'
+
+
+def _read_json(request):
+    try:
+        return json.loads(request.body)
+    except ValueError:
+        return {}
+
+
+@login_required
+@require_POST
+def stellar_prepare_booking(request, pk):
+    """Build the unsigned `book` transaction for the student's wallet to sign."""
+    dorm = get_object_or_404(DormAccommodation, pk=pk)
+    address = _read_json(request).get('address')
+    if not _bookable_on_chain(dorm):
+        return JsonResponse({'error': 'This dorm cannot be booked with Stellar.'}, status=400)
+    if not stellar.is_valid_address(address):
+        return JsonResponse({'error': 'Invalid Stellar wallet address.'}, status=400)
+
+    try:
+        xdr = stellar.build_booking_transaction(address, dorm.chain_dorm_id)
+    except stellar.StellarError as exc:
+        logger.warning("Preparing Stellar booking failed: %s", exc)
+        return JsonResponse({'error': 'Could not prepare the transaction. Check that your wallet is funded and has no open booking for this dorm.'}, status=400)
+    return JsonResponse({'xdr': xdr})
+
+
+@login_required
+@require_POST
+def stellar_submit_booking(request, pk):
+    """Submit the wallet-signed transaction and record the confirmed booking."""
+    dorm = get_object_or_404(DormAccommodation, pk=pk)
+    data = _read_json(request)
+    address, signed_xdr = data.get('address'), data.get('signed_xdr')
+    if not _bookable_on_chain(dorm):
+        return JsonResponse({'error': 'This dorm cannot be booked with Stellar.'}, status=400)
+    if not stellar.is_valid_address(address) or not signed_xdr:
+        return JsonResponse({'error': 'Missing wallet address or signed transaction.'}, status=400)
+
+    try:
+        chain_booking_id, tx_hash = stellar.submit_booking_transaction(signed_xdr, address, dorm.chain_dorm_id)
+    except stellar.StellarError as exc:
+        logger.warning("Submitting Stellar booking failed: %s", exc)
+        return JsonResponse({'error': str(exc)}, status=400)
+
+    booking, _ = BookingStatus.objects.get_or_create(
+        chain_booking_id=chain_booking_id,
+        defaults={
+            'user_id': request.user,
+            'dorm_id': dorm,
+            'amount': dorm.price,
+            'reference_payment': tx_hash[:6].upper(),
+            'wallet_address': address,
+            'tx_hash': tx_hash,
+        },
+    )
+    messages.success(request, "Payment received on Stellar! Your booking is under review.")
+    return JsonResponse({'redirect': reverse('success'), 'tx_hash': tx_hash})
+

@@ -1,10 +1,14 @@
+import json
 from decimal import Decimal
+from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
+from stellar_sdk import Keypair, scval
 
+from . import stellar
 from .models import BookingStatus, DormAccommodation
 
 
@@ -187,3 +191,104 @@ class BookingViewTests(TestCase):
         self.client.force_login(self.user)
         response = self.client.get(reverse("booking-status"))
         self.assertEqual(list(response.context["booking_status"]), [mine])
+
+
+CONTRACT_ID = "CB3PBY7GGWEZFD35YSKUT65NSDYE3AVM7C5OCFXELOY6NJKHDUGMR2FQ"
+
+
+@override_settings(STELLAR_CONTRACT_ID=CONTRACT_ID)
+class StellarEnvelopeCheckTests(TestCase):
+    """The server must only submit the exact `book` call it prepared."""
+
+    def setUp(self):
+        self.student = Keypair.random().public_key
+
+    def build(self, source=None, contract=CONTRACT_ID, function="book", dorm_id=2, student=None):
+        from stellar_sdk import Account, Network, TransactionBuilder
+
+        tx = (
+            TransactionBuilder(Account(source or self.student, 1), Network.TESTNET_NETWORK_PASSPHRASE, base_fee=100)
+            .append_invoke_contract_function_op(
+                contract, function, [scval.to_address(student or self.student), scval.to_uint32(dorm_id)]
+            )
+            .set_timeout(30)
+            .build()
+        )
+        return tx
+
+    def test_accepts_matching_transaction(self):
+        stellar._check_booking_envelope(self.build(), self.student, 2)
+
+    def test_rejects_tampered_transactions(self):
+        other = Keypair.random().public_key
+        cases = {
+            "different dorm": self.build(dorm_id=1),
+            "different function": self.build(function="cancel"),
+            "different contract": self.build(contract="CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC"),
+            "different student": self.build(student=other),
+            "different source": self.build(source=other),
+        }
+        for name, envelope in cases.items():
+            with self.subTest(name), self.assertRaises(stellar.StellarError):
+                stellar._check_booking_envelope(envelope, self.student, 2)
+
+
+@override_settings(STELLAR_CONTRACT_ID=CONTRACT_ID)
+class StellarBookingViewTests(TestCase):
+    def setUp(self):
+        self.dorm = make_dorm("Shared", 2, chain_dorm_id=2, price_xlm=Decimal("0.5"))
+        self.user = make_user("alice")
+        self.address = Keypair.random().public_key
+        self.client.force_login(self.user)
+
+    def post(self, name, body):
+        return self.client.post(reverse(name, args=[self.dorm.pk]), json.dumps(body), content_type="application/json")
+
+    def test_detail_page_shows_wallet_payment(self):
+        response = self.client.get(reverse("waitlist_detail", args=[self.dorm.pk]))
+        self.assertContains(response, 'id="stellar-pay"')
+
+    @override_settings(STELLAR_CONTRACT_ID="")
+    def test_wallet_payment_hidden_when_disabled(self):
+        response = self.client.get(reverse("waitlist_detail", args=[self.dorm.pk]))
+        self.assertNotContains(response, 'id="stellar-pay"')
+
+    @patch("dormmatch.stellar.build_booking_transaction", return_value="UNSIGNED_XDR")
+    def test_prepare_returns_unsigned_transaction(self, build):
+        response = self.post("stellar_prepare_booking", {"address": self.address})
+        self.assertEqual(response.json(), {"xdr": "UNSIGNED_XDR"})
+        build.assert_called_once_with(self.address, 2)
+
+    def test_prepare_rejects_invalid_address(self):
+        response = self.post("stellar_prepare_booking", {"address": "not-an-address"})
+        self.assertEqual(response.status_code, 400)
+
+    def test_prepare_rejects_dorm_not_on_chain(self):
+        self.dorm.chain_dorm_id = None
+        self.dorm.save()
+        response = self.post("stellar_prepare_booking", {"address": self.address})
+        self.assertEqual(response.status_code, 400)
+
+    @patch("dormmatch.stellar.submit_booking_transaction", return_value=(7, "ab" * 32))
+    def test_submit_records_booking(self, submit):
+        response = self.post("stellar_submit_booking", {"address": self.address, "signed_xdr": "SIGNED"})
+        self.assertEqual(response.json()["redirect"], reverse("success"))
+        submit.assert_called_once_with("SIGNED", self.address, 2)
+
+        booking = BookingStatus.objects.get()
+        self.assertEqual(booking.chain_booking_id, 7)
+        self.assertEqual(booking.user_id, self.user)
+        self.assertEqual(booking.amount, self.dorm.price)
+        self.assertEqual(booking.wallet_address, self.address)
+        self.assertEqual(booking.reference_payment, "ABABAB")
+
+    @patch("dormmatch.stellar.submit_booking_transaction", side_effect=stellar.StellarError("failed on-chain"))
+    def test_submit_reports_failure(self, submit):
+        response = self.post("stellar_submit_booking", {"address": self.address, "signed_xdr": "SIGNED"})
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(BookingStatus.objects.exists())
+
+    def test_endpoints_require_login(self):
+        self.client.logout()
+        response = self.post("stellar_prepare_booking", {"address": self.address})
+        self.assertEqual(response.status_code, 302)
