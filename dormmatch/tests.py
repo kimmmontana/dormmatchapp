@@ -292,3 +292,19 @@ class StellarBookingViewTests(TestCase):
         self.client.logout()
         response = self.post("stellar_prepare_booking", {"address": self.address})
         self.assertEqual(response.status_code, 302)
+
+
+class SeedDemoCommandTests(TestCase):
+    def test_seed_demo_is_idempotent(self):
+        from io import StringIO
+        from tempfile import TemporaryDirectory
+
+        from django.core.management import call_command
+
+        with TemporaryDirectory() as media, override_settings(MEDIA_ROOT=media):
+            call_command("seed_demo", stdout=StringIO())
+            call_command("seed_demo", stdout=StringIO())
+
+        self.assertEqual(DormAccommodation.objects.count(), 4)
+        self.assertEqual(BookingStatus.objects.filter(book_status="Waitlisted").count(), 2)
+        self.assertEqual(DormAccommodation.objects.get(dorm_name="Class A Shared").occupied_status, "Waiting")
