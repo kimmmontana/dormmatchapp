@@ -8,7 +8,7 @@
          data-network-passphrase="{{ stellar_network_passphrase }}"
          data-csrf="{{ csrf_token }}">
         <p class="text-uppercase small mb-2" style="letter-spacing: 0.1em; opacity: 0.75;">or pay instantly on-chain</p>
-        <h3 class="h4 fw-bold mb-2">Pay {{ dorm.price_xlm|floatformat:"-7" }} XLM with Stellar</h3>
+        <h3 class="h4 fw-bold mb-2">Pay {{ dorm.price_xlm_display }} XLM with Stellar</h3>
         <p class="mb-3" style="opacity: 0.85;">Your payment is held in the DormMatch smart contract and refunded automatically if the booking is declined.</p>
         <button type="button" class="btn btn-light px-4 py-2 fw-semibold" data-stellar-pay>Connect Freighter &amp; Pay</button>
         <div data-stellar-status class="small mt-3" role="status" aria-live="polite"></div>

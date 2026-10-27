@@ -59,6 +59,11 @@ class DormAccommodationModelTests(TestCase):
         dorm = make_dorm("Solo", 1)
         self.assertEqual(dorm.num_waitlist, "NOT APPLICABLE")
 
+    def test_price_xlm_display_drops_trailing_zeros(self):
+        for value, expected in (("0.5000000", "0.5"), ("50.0000000", "50"), ("12.3456789", "12.3456789")):
+            with self.subTest(value=value):
+                self.assertEqual(DormAccommodation(price_xlm=Decimal(value)).price_xlm_display, expected)
+
     def test_str(self):
         dorm = make_dorm("Shared", 2)
         self.assertEqual(str(dorm), f"{dorm.dorm_id}-DORM-SHARED")

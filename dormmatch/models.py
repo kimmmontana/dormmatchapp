@@ -37,6 +37,13 @@ class DormAccommodation(models.Model):
         # Define the string representation for the admin panel
         return f"{self.dorm_id}-DORM-{self.room_type.upper()}"
     
+    @property
+    def price_xlm_display(self):
+        """XLM price without trailing zeros, e.g. 0.5 instead of 0.5000000."""
+        if self.price_xlm is None:
+            return ""
+        return f"{self.price_xlm:f}".rstrip("0").rstrip(".")
+
     def get_waitlisted_count(self):
         #Calculate the number of waitlisted users for this dorm.
         return BookingStatus.objects.filter(dorm_id=self,book_status='Waitlisted').count()
