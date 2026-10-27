@@ -5,6 +5,9 @@ from .models import DormAccommodation, BookingStatus
 from .forms import BookingStatusForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
+import logging
+
+logger = logging.getLogger(__name__)
 
 class HomePageView(TemplateView):
     template_name = "home.html"
@@ -35,7 +38,6 @@ class WaitlistDormDetailView(LoginRequiredMixin, FormMixin, DetailView):
         self.object = self.get_object()  # Fetch the dorm object
         form = self.get_form()
 
-        print(f"self.object type: {self.object.dorm_id}") 
         if form.is_valid():
             try:
                 booking = form.save(commit=False)
@@ -45,12 +47,11 @@ class WaitlistDormDetailView(LoginRequiredMixin, FormMixin, DetailView):
                 booking.save()
                 messages.success(request, "Booking submitted and under review! You have been redirected to the homepage.")
                 return self.form_valid(form)
-            except Exception as e:
-                print(f"Error saving booking: {e}") 
+            except Exception:
+                logger.exception("Error saving booking for dorm %s", self.object.pk)
             return self.form_invalid(form)
         else:
-            print("Form is not valid")  
-            print(form.errors)  
+            logger.info("Invalid booking form: %s", form.errors.as_json())
             return self.form_invalid(form)
         
 
@@ -79,7 +80,6 @@ class SoloDormDetailView(LoginRequiredMixin, FormMixin, DetailView):
         # Handle the form submission
         self.object = self.get_object()  # Fetch the dorm object
         form = self.get_form()
-        print(f"self.object type: {self.object.dorm_id}") 
         if form.is_valid():
             try:
                 booking = form.save(commit=False)
@@ -88,12 +88,11 @@ class SoloDormDetailView(LoginRequiredMixin, FormMixin, DetailView):
                 booking.amount = self.object.price  # Set the amount to the dorm price
                 booking.save()
                 return self.form_valid(form)
-            except Exception as e:
-                print(f"Error saving booking: {e}") 
+            except Exception:
+                logger.exception("Error saving booking for dorm %s", self.object.pk)
             return self.form_invalid(form)
         else:
-            print("Form is not valid")  
-            print(form.errors)  
+            logger.info("Invalid booking form: %s", form.errors.as_json())
             return self.form_invalid(form)
         
 class BookingStatusListView(LoginRequiredMixin, ListView):
