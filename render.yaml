@@ -1,0 +1,29 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+databases:
+  - name: dormmatch-db
+    plan: free
+    databaseName: dormmatch
+    user: dormmatch
+
+services:
+  - type: web
+    name: dormmatch
+    runtime: python
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: gunicorn django_project.wsgi:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: dormmatch-db
+          property: connectionString
+      - key: STELLAR_CONTRACT_ID
+        value: CB3PBY7GGWEZFD35YSKUT65NSDYE3AVM7C5OCFXELOY6NJKHDUGMR2FQ
+      - key: STELLAR_ADMIN_SECRET
+        sync: false
