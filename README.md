@@ -1,13 +1,36 @@
-# DormMatch
+<div align="center">
 
-DormMatch is a web platform that helps students find, book, and share dormitories. Students can browse **solo rooms** or join the **waitlist for shared rooms**, submit a booking with a payment reference, and track their booking status. Administrators verify payments and manage dorm availability.
+<img src="static/images/logo.png" alt="DormMatch logo" width="280">
 
-The project is a Django web app. It also includes an optional **Stellar (Soroban) smart contract** that holds booking payments in on-chain escrow.
+### Find your dorm. Match your roommates. Book with confidence.
+
+A student housing platform for booking solo dorms and filling shared rooms through a waitlist,<br>
+with optional on-chain payment escrow on the **Stellar** network.
+
+![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
+![Django](https://img.shields.io/badge/Django-4.0-092E20?logo=django&logoColor=white)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-5-7952B3?logo=bootstrap&logoColor=white)
+![Rust](https://img.shields.io/badge/Rust-Soroban-000000?logo=rust&logoColor=white)
+![Stellar](https://img.shields.io/badge/Stellar-Smart%20Contract-7D00FF?logo=stellar&logoColor=white)
+
+</div>
+
+---
+
+## Overview
+
+Finding student housing and compatible roommates is often slow and uncertain. **DormMatch** puts it in one place:
+
+- Students browse **solo rooms** and book them directly, or join the **waitlist for a shared room**.
+- When a shared room's waitlist reaches capacity, every resident on it is **approved automatically**.
+- Students pay by QR code and submit a payment reference. **Administrators** verify it and manage availability from a dashboard.
+- An optional **Stellar Soroban smart contract** holds payments in escrow, so students are refunded automatically if a booking is declined.
 
 ---
 
 ## Table of Contents
 
+- [Overview](#overview)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
@@ -16,6 +39,8 @@ The project is a Django web app. It also includes an optional **Stellar (Soroban
 - [Smart Contract (Stellar / Soroban)](#smart-contract-stellar--soroban)
 - [Data Model](#data-model)
 - [Running Tests](#running-tests)
+- [Contributing](#contributing)
+- [Author](#author)
 
 ---
 
@@ -240,3 +265,20 @@ python manage.py test
 cd blockchain && cargo test
 ```
 
+## Contributing
+
+1. Fork the repository and create a feature branch: `git checkout -b feature/my-change`
+2. Make your changes and run the tests (`python manage.py test` and `cargo test` in `blockchain/`).
+3. Commit with a clear message and open a pull request against `main`.
+
+Never commit `.env` files or secret keys. Use `.env.example` as the template.
+
+## Author
+
+**Kim M. Montana** · [@kimmmontana](https://github.com/kimmmontana)
+
+<div align="center">
+
+Made for students, by students. 🏠
+
+</div>
